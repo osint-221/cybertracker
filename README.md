@@ -116,7 +116,8 @@ MIT License - voir [LICENSE](./LICENSE) pour plus de détails.
 
 ## Auteurs
 
-- **OSINT-221** - [https://osint-221.com](https://osint-221.com)
+**OSINT-221** - [https://osint-221.com](https://osint-221.com)
+> Organisation de recherche en source ouverte spécialisée dans la cybersécurité et la veille des menaces numériques en Afrique de l'Ouest.
 
 ---
 
