@@ -54,89 +54,107 @@ const Index = () => {
   useEffect(() => {
     const fetchAttacks = async () => {
       setLoading(true);
-      const { data } = await supabase.from("cyberattacks").select("*").order("date", { ascending: false });
       
-      if (data && data.length > 0) {
-        // Default sources based on attack characteristics
-        const getDefaultSources = (attackType: string, severity: string) => {
-          const defaultSources = [
-            { country: "Nigeria", countryCode: "NG", lat: 9.082, lng: 8.6753, percentage: 35 },
-            { country: "Cameroun", countryCode: "CM", lat: 7.3697, lng: 12.3547, percentage: 20 },
-            { country: "International", countryCode: "INT", lat: 0, lng: 0, percentage: 45 },
-          ];
-          
-          // Adjust sources based on attack type
-          if (attackType.toLowerCase().includes('ransomware')) {
-            return [
-              { country: "Russie", countryCode: "RU", lat: 61.524, lng: 105.3188, percentage: 40 },
-              { country: "USA", countryCode: "US", lat: 37.0902, lng: -95.7129, percentage: 30 },
-              { country: "Nigeria", countryCode: "NG", lat: 9.082, lng: 8.6753, percentage: 30 },
-            ];
-          }
-          if (attackType.toLowerCase().includes('ddos')) {
-            return [
-              { country: "Chine", countryCode: "CN", lat: 35.8617, lng: 104.1954, percentage: 45 },
-              { country: "USA", countryCode: "US", lat: 37.0902, lng: -95.7129, percentage: 35 },
-              { country: "Russie", countryCode: "RU", lat: 61.524, lng: 105.3188, percentage: 20 },
-            ];
-          }
-          return defaultSources;
-        };
+      // Check if Supabase is configured
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      
+      if (!supabaseUrl || !supabaseKey) {
+        // Use local data if Supabase is not configured
+        setAttacks(cyberAttacksData);
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        const { data } = await supabase.from("cyberattacks").select("*").order("date", { ascending: false });
         
-        const mapped: CyberAttack[] = data.map((item) => {
-          const dateStr = item.date;
-          let year = 2024;
-          let month = 1;
-          
-          // Handle format jj/mm/aaaa (e.g., "31/01/2026")
-          if (dateStr.includes("/")) {
-            const parts = dateStr.split("/");
-            if (parts.length === 3) {
-              month = parseInt(parts[1]) || 1;
-              year = parseInt(parts[2]) || 2024;
+        if (data && data.length > 0) {
+          // Default sources based on attack characteristics
+          const getDefaultSources = (attackType: string, severity: string) => {
+            const defaultSources = [
+              { country: "Nigeria", countryCode: "NG", lat: 9.082, lng: 8.6753, percentage: 35 },
+              { country: "Cameroun", countryCode: "CM", lat: 7.3697, lng: 12.3547, percentage: 20 },
+              { country: "International", countryCode: "INT", lat: 0, lng: 0, percentage: 45 },
+            ];
+            
+            // Adjust sources based on attack type
+            if (attackType.toLowerCase().includes('ransomware')) {
+              return [
+                { country: "Russie", countryCode: "RU", lat: 61.524, lng: 105.3188, percentage: 40 },
+                { country: "USA", countryCode: "US", lat: 37.0902, lng: -95.7129, percentage: 30 },
+                { country: "Nigeria", countryCode: "NG", lat: 9.082, lng: 8.6753, percentage: 30 },
+              ];
             }
-          } else if (dateStr.includes(" ")) {
-            const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-            const monthIdx = monthNames.findIndex(m => dateStr.toLowerCase().includes(m.toLowerCase()));
-            if (monthIdx >= 0) month = monthIdx + 1;
-            const yearMatch = dateStr.match(/\d{4}/);
-            if (yearMatch) year = parseInt(yearMatch[0]);
-          } else if (!isNaN(parseInt(dateStr))) {
-            year = parseInt(dateStr);
-          }
-          
-          const severityMap: Record<string, SeverityLevel> = {
-            "critique": "critique",
-            "élevé": "élevé",
-            "moyen": "moyen",
-            "faible": "faible"
+            if (attackType.toLowerCase().includes('ddos')) {
+              return [
+                { country: "Chine", countryCode: "CN", lat: 35.8617, lng: 104.1954, percentage: 45 },
+                { country: "USA", countryCode: "US", lat: 37.0902, lng: -95.7129, percentage: 35 },
+                { country: "Russie", countryCode: "RU", lat: 61.524, lng: 105.3188, percentage: 20 },
+              ];
+            }
+            return defaultSources;
           };
           
-          const lat = item.lat || (14.7167 + (Math.random() - 0.5) * 0.15);
-          const lng = item.lng || (-17.4677 + (Math.random() - 0.5) * 0.15);
-          
-          return {
-            id: item.id,
-            victim: item.victim,
-            attackType: item.attack_type,
-            severity: severityMap[item.severity] || "moyen",
-            date: item.date,
-            year,
-            month,
-            hackers: item.hacker_group || "Inconnu",
-            impact: item.impact || "",
-            dataCategory: "Données sensibles" as const,
-            sourceName: "CyberTracker SN",
-            sourceUrl: "",
-            lat: lat,
-            lng: lng,
-            icon: "📍",
-            sources: getDefaultSources(item.attack_type || '', item.severity || ''),
-            isActive: item.is_active,
-          };
-        });
-        setAttacks(mapped);
-      } else {
+          const mapped: CyberAttack[] = data.map((item) => {
+            const dateStr = item.date;
+            let year = 2024;
+            let month = 1;
+            
+            // Handle format jj/mm/aaaa (e.g., "31/01/2026")
+            if (dateStr.includes("/")) {
+              const parts = dateStr.split("/");
+              if (parts.length === 3) {
+                month = parseInt(parts[1]) || 1;
+                year = parseInt(parts[2]) || 2024;
+              }
+            } else if (dateStr.includes(" ")) {
+              const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+              const monthIdx = monthNames.findIndex(m => dateStr.toLowerCase().includes(m.toLowerCase()));
+              if (monthIdx >= 0) month = monthIdx + 1;
+              const yearMatch = dateStr.match(/\d{4}/);
+              if (yearMatch) year = parseInt(yearMatch[0]);
+            } else if (!isNaN(parseInt(dateStr))) {
+              year = parseInt(dateStr);
+            }
+            
+            const severityMap: Record<string, SeverityLevel> = {
+              "critique": "critique",
+              "élevé": "élevé",
+              "moyen": "moyen",
+              "faible": "faible"
+            };
+            
+            const lat = item.lat || (14.7167 + (Math.random() - 0.5) * 0.15);
+            const lng = item.lng || (-17.4677 + (Math.random() - 0.5) * 0.15);
+            
+            return {
+              id: item.id,
+              victim: item.victim,
+              attackType: item.attack_type,
+              severity: severityMap[item.severity] || "moyen",
+              date: item.date,
+              year,
+              month,
+              hackers: item.hacker_group || "Inconnu",
+              impact: item.impact || "",
+              dataCategory: "Données sensibles" as const,
+              sourceName: "CyberTracker SN",
+              sourceUrl: "",
+              lat: lat,
+              lng: lng,
+              icon: "📍",
+              sources: getDefaultSources(item.attack_type || '', item.severity || ''),
+              isActive: item.is_active,
+            };
+          });
+          setAttacks(mapped);
+        } else {
+          setAttacks(cyberAttacksData);
+        }
+      } catch (error) {
+        // Fallback to local data on error
+        console.warn("Supabase connection failed, using local data:", error);
         setAttacks(cyberAttacksData);
       }
       setLoading(false);
