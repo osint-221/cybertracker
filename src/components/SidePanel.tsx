@@ -138,12 +138,7 @@ export const SidePanel = ({
 
   const hasFilters = selectedTypes.length > 0 || selectedSeverities.length > 0 || searchQuery !== "" || startDate !== undefined || endDate !== undefined || selectedSector !== null;
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [isCollapsed]);
+
 
   return (
     <div

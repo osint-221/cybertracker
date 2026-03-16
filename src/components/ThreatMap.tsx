@@ -18,7 +18,6 @@ interface ThreatMapProps {
   selectedSector?: string | null;
   resolvedCount?: number;
   unconfirmedCount?: number;
-  onSeverityHover?: (severity: string | null) => void;
 }
 
 const SENEGAL_CENTER = { lng: -17.444, lat: 14.716 };
@@ -124,7 +123,7 @@ function generateMapData(attacks: CyberAttack[], filterSeverity?: SeverityLevel)
   };
 }
 
-export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCount = 0, unconfirmedCount = 0, onSeverityHover }: ThreatMapProps) => {
+export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCount = 0, unconfirmedCount = 0 }: ThreatMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [showStats, setShowStats] = useState(false);
@@ -132,6 +131,9 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
   const [severityFilter, setSeverityFilter] = useState<SeverityLevel | "all">("all");
   const [viewMode, setViewMode] = useState<"globe" | "carte" | "senegal">("carte");
   const [activeHover, setActiveHover] = useState<string | null>(null);
+  const [mapError, setMapError] = useState(false);
+
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
   const stats = {
     total: severityFilter === "all" ? attacks.length : attacks.filter(a => a.severity === severityFilter).length,
@@ -258,7 +260,14 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || "";
+    // Check if Mapbox token is available
+    if (!mapboxToken) {
+      console.warn("Mapbox token not configured. Map will not load.");
+      setMapError(true);
+      return;
+    }
+
+    mapboxgl.accessToken = mapboxToken;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -358,25 +367,25 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     const mostCritical = criticalAttacks.length > 0 ? criticalAttacks[0] : null;
 
     // ==================== PAGE 1 ====================
-    
+
     // Header
     pdf.setFillColor(...primaryColor);
     pdf.rect(0, 0, pageWidth, 45, 'F');
-    
+
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(22);
     pdf.setTextColor(255, 255, 255);
     pdf.text("CYBERTRACKER", margin, 18);
-    
+
     pdf.setFontSize(12);
     pdf.setTextColor(220, 38, 38);
     pdf.text("SENEGAL", margin, 28);
-    
+
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8);
     pdf.setTextColor(200, 200, 200);
     pdf.text("Plateforme nationale de veille des cybermenaces", margin, 36);
-    
+
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(16);
     pdf.setTextColor(255, 255, 255);
@@ -406,7 +415,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     const totalAttacks = attacks.length;
     const criticalCount = attacks.filter(a => a.severity === 'critique').length;
     const activeAttacks = attacks.filter(a => a.isActive).length;
-    
+
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(9);
     pdf.setTextColor(...secondaryColor);
@@ -425,14 +434,14 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     y += 6;
     pdf.line(margin, y, pageWidth - margin, y);
     y += 10;
-    
+
     const statsData = [
       { label: "Total incidents", value: totalAttacks },
       { label: "Incidents critiques", value: criticalCount },
       { label: "Incidents actifs", value: activeAttacks },
       { label: "Ransomwares", value: attacks.filter(a => a.attackType.toLowerCase().includes('ransomware')).length },
     ];
-    
+
     const boxWidth = (contentWidth - 15) / 4;
     statsData.forEach((stat, i) => {
       const x = margin + i * (boxWidth + 5);
@@ -447,7 +456,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
       pdf.setTextColor(...secondaryColor);
       pdf.text(stat.label.toUpperCase(), x + boxWidth / 2, y + 17, { align: "center" });
     });
-    
+
     y += 32;
 
     // Most Critical Attack
@@ -457,26 +466,26 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
       pdf.setTextColor(...accentColor);
       pdf.text("ATTAQUE LA PLUS CRITIQUE", margin, y);
       y += 6;
-      
+
       pdf.setFillColor(255, 245, 245);
       pdf.roundedRect(margin, y, contentWidth, 30, 2, 2, 'F');
       pdf.setDrawColor(220, 38, 38);
       pdf.roundedRect(margin, y, contentWidth, 30, 2, 2, 'S');
-      
+
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
       pdf.setTextColor(220, 38, 38);
       pdf.text(safeText(mostCritical.victim, contentWidth - 10), margin + 5, y + 8);
-      
+
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(8);
       pdf.setTextColor(...primaryColor);
       pdf.text(`${mostCritical.date} | ${mostCritical.attackType}`, margin + 5, y + 15);
       pdf.text(`Groupe: ${mostCritical.hackers || 'Non identifié'}`, margin + 5, y + 21);
-      
+
       const impactText = safeText(mostCritical.impact || 'Impact non spécifié', contentWidth - 60);
       pdf.text(`Impact: ${impactText}`, margin + 5, y + 27);
-      
+
       y += 40;
     }
 
@@ -488,44 +497,44 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     y += 6;
     pdf.line(margin, y, pageWidth - margin, y);
     y += 8;
-    
+
     const severityCounts = {
       'critique': attacks.filter(a => a.severity === 'critique').length,
       'élevé': attacks.filter(a => a.severity === 'élevé').length,
       'moyen': attacks.filter(a => a.severity === 'moyen').length,
       'faible': attacks.filter(a => a.severity === 'faible').length,
     };
-    
+
     const sevConfig: Record<string, { label: string; color: [number, number, number] }> = {
       'critique': { label: 'CRITIQUE', color: [220, 38, 38] },
       'élevé': { label: 'ÉLEVÉ', color: [249, 115, 22] },
       'moyen': { label: 'MOYEN', color: [59, 130, 246] },
       'faible': { label: 'FAIBLE', color: [34, 197, 94] },
     };
-    
+
     Object.entries(severityCounts).forEach(([sev, count]) => {
       const barMaxWidth = contentWidth - 40;
       const barWidth = totalAttacks > 0 ? (count / totalAttacks) * barMaxWidth : 0;
-      
+
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(8);
       pdf.setTextColor(...secondaryColor);
       pdf.text(sevConfig[sev].label, margin, y + 4);
-      
+
       pdf.setFillColor(230, 230, 230);
       pdf.roundedRect(margin + 40, y, barMaxWidth, 6, 1, 1, 'F');
-      
+
       pdf.setFillColor(...sevConfig[sev].color);
       pdf.roundedRect(margin + 40, y, barWidth, 6, 1, 1, 'F');
-      
+
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(8);
       pdf.setTextColor(...primaryColor);
       pdf.text(count.toString(), pageWidth - margin, y + 4, { align: "right" });
-      
+
       y += 10;
     });
-    
+
     y += 10;
 
     // Recent Incidents Table
@@ -536,7 +545,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     y += 6;
     pdf.line(margin, y, pageWidth - margin, y);
     y += 8;
-    
+
     // Table header
     pdf.setFillColor(...primaryColor);
     pdf.rect(margin, y, contentWidth, 6, 'F');
@@ -549,25 +558,25 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     pdf.text("GRAVITÉ", margin + 105, y + 4);
     pdf.text("STATUT", margin + 130, y + 4);
     y += 6;
-    
+
     // Table rows
     const recentAttacks = attacks.slice(0, 8);
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(6);
-    
+
     recentAttacks.forEach((attack, i) => {
       checkPageBreak(6);
-      
+
       if (i % 2 === 0) {
         pdf.setFillColor(248, 250, 252);
         pdf.rect(margin, y, contentWidth, 6, 'F');
       }
-      
+
       pdf.setTextColor(...primaryColor);
       pdf.text(safeText(attack.date, 15), margin + 2, y + 4);
       pdf.text(safeText(attack.victim, 45), margin + 20, y + 4);
       pdf.text(safeText(attack.attackType, 30), margin + 70, y + 4);
-      
+
       const sevColors: Record<string, [number, number, number]> = {
         'critique': [220, 38, 38], 'élevé': [249, 115, 22],
         'moyen': [59, 130, 246], 'faible': [34, 197, 94],
@@ -575,11 +584,11 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
       const severityColor = sevColors[attack.severity] || secondaryColor;
       pdf.setTextColor(severityColor[0], severityColor[1], severityColor[2]);
       pdf.text(attack.severity.toUpperCase(), margin + 105, y + 4);
-      
+
       const activeColor: [number, number, number] = attack.isActive ? [220, 38, 38] : [34, 197, 94];
       pdf.setTextColor(activeColor[0], activeColor[1], activeColor[2]);
       pdf.text(attack.isActive ? 'ACTIF' : 'PASSIF', margin + 130, y + 4);
-      
+
       y += 6;
     });
 
@@ -592,7 +601,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
 
     // ==================== PAGE 2 ====================
     pdf.addPage();
-    
+
     // Header
     pdf.setFillColor(...primaryColor);
     pdf.rect(0, 0, pageWidth, 20, 'F');
@@ -600,7 +609,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     pdf.setFontSize(12);
     pdf.setTextColor(255, 255, 255);
     pdf.text("ANALYSE DÉTAILLÉE", margin, 14);
-    
+
     y = 30;
 
     // Sectors
@@ -611,14 +620,14 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     y += 6;
     pdf.line(margin, y, pageWidth - margin, y);
     y += 8;
-    
+
     const sectorKeywords: Record<string, string[]> = {
       'Gouvernement': ['gouvernement', 'ministère', 'dgid', 'impôts', 'ageroute', 'anacim', 'daf', 'état'],
       'Banque/Finance': ['banque', 'bank', 'sgbs', 'wari', 'habitat', 'wave', 'money'],
       'Télécoms': ['télécom', 'artp', 'poste'],
       'Transport': ['asena', 'air', 'aérien'],
     };
-    
+
     const sectorCounts: Record<string, number> = {};
     Object.keys(sectorKeywords).forEach(s => sectorCounts[s] = 0);
     attacks.forEach(a => {
@@ -627,7 +636,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
         if (keywords.some(kw => v.includes(kw))) sectorCounts[sector]++;
       });
     });
-    
+
     Object.entries(sectorCounts)
       .filter(([, c]) => c > 0)
       .sort((a, b) => b[1] - a[1])
@@ -643,7 +652,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
         pdf.text(`${count} incident(s)`, pageWidth - margin - 25, y + 5);
         y += 10;
       });
-    
+
     y += 8;
 
     // Timeline
@@ -654,10 +663,10 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     y += 6;
     pdf.line(margin, y, pageWidth - margin, y);
     y += 8;
-    
+
     const yearCounts: Record<number, number> = {};
     attacks.forEach(a => { yearCounts[a.year] = (yearCounts[a.year] || 0) + 1; });
-    
+
     Object.entries(yearCounts)
       .sort((a, b) => a[0].localeCompare(b[0]))
       .forEach(([year, count]) => {
@@ -674,7 +683,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
         pdf.text(count.toString(), pageWidth - margin, y + 4, { align: 'right' });
         y += 8;
       });
-    
+
     y += 10;
 
     // Top attacks details
@@ -685,25 +694,25 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     y += 6;
     pdf.line(margin, y, pageWidth - margin, y);
     y += 8;
-    
+
     attacks.slice(0, 4).forEach((attack, i) => {
       checkPageBreak(35);
-      
+
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(9);
       pdf.setTextColor(...accentColor);
       pdf.text(`${i + 1}. ${safeText(attack.victim, contentWidth - 10)}`, margin, y);
       y += 5;
-      
+
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(8);
       pdf.setTextColor(...secondaryColor);
       pdf.text(`${attack.date} | ${attack.attackType} | Gravité: ${attack.severity}`, margin, y);
       y += 4;
-      
+
       pdf.text(`Groupe: ${attack.hackers || 'Non identifié'}`, margin, y);
       y += 4;
-      
+
       if (attack.impact) {
         const impactLines = pdf.splitTextToSize(`Impact: ${attack.impact}`, contentWidth - 5);
         pdf.setTextColor(...primaryColor);
@@ -723,7 +732,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
     y += 6;
     pdf.line(margin, y, pageWidth - margin, y);
     y += 8;
-    
+
     const recommendations = [
       "Renforcer la formation aux bonnes pratiques de sécurité",
       "Mettre en place une stratégie de sauvegarde robuste",
@@ -732,7 +741,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
       "Effectuer des audits de sécurité réguliers",
       "Sensibiliser au phishing et ingénierie sociale"
     ];
-    
+
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8);
     recommendations.forEach(rec => {
@@ -756,7 +765,20 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
 
   return (
     <div className="relative w-full h-full">
-      <div ref={mapContainer} className="absolute inset-0" />
+      {mapError ? (
+        <div className="absolute inset-0 bg-background flex items-center justify-center">
+          <div className="text-center p-8">
+            <Globe className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-lg font-semibold mb-2">Carte non disponible</h3>
+            <p className="text-sm text-muted-foreground max-w-md">
+              La carte interactive nécessite une clé API Mapbox.
+              Configurez VITE_MAPBOX_TOKEN dans votre fichier .env pour l'activer.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div ref={mapContainer} className="absolute inset-0 bg-background" />
+      )}
 
       {/* Top Left - Stats Card - Optimized */}
       <div className="absolute top-4 left-4 z-10">
@@ -783,8 +805,6 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
                 <button
                   key={sev}
                   onClick={(e) => { e.stopPropagation(); filterBySeverity(sev as SeverityLevel); }}
-                  onMouseEnter={() => onSeverityHover?.(sev)}
-                  onMouseLeave={() => onSeverityHover?.(null)}
                   className={cn(
                     "flex-1 transition-all relative",
                     severityFilter === sev ? "ring-1 ring-white/50 z-10" : "opacity-70 hover:opacity-100"
@@ -796,7 +816,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
             </div>
             {severityFilter !== "all" && (
               <button
-                onClick={(e) => { e.stopPropagation(); filterBySeverity("all"); onSeverityHover?.(null); }}
+                onClick={(e) => { e.stopPropagation(); filterBySeverity("all"); }}
                 className="text-[10px] text-muted-foreground hover:text-foreground"
               >
                 ×
@@ -902,16 +922,16 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
           <BarChart3 className="h-4 w-4" />
         </Button>
 
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => {
             setPdfLoading(true);
             handleDownloadPDF();
             setTimeout(() => setPdfLoading(false), 1000);
-          }} 
+          }}
           disabled={pdfLoading}
-          className="h-9 w-9 p-0 bg-background/95 backdrop-blur border-border" 
+          className="h-9 w-9 p-0 bg-background/95 backdrop-blur border-border"
           title="Exporter PDF"
         >
           {pdfLoading ? (

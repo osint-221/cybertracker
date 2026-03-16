@@ -47,7 +47,6 @@ const Index = () => {
   const [selectedAttack, setSelectedAttack] = useState<CyberAttack | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [cyberThreats, setCyberThreats] = useState(13100000);
-  const [hoveredSeverity, setHoveredSeverity] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [attacks, setAttacks] = useState<CyberAttack[]>([]);
   
@@ -260,27 +259,15 @@ const Index = () => {
       const matchesSeverity = selectedSeverities.length === 0 || selectedSeverities.includes(attack.severity);
       const matchesSector = selectedSector === null || classifySector(attack.victim) === selectedSector;
       
-      // Hover filter for resolved/unconfirmed
-      let matchesHoveredStatus = true;
-      if (hoveredSeverity === "resolved") {
-        const impact = attack.impact.toLowerCase();
-        const isResolved = impact.includes("résolu") || impact.includes("restauré") || impact.includes("corrigé") || impact.includes("pas de paiement") || impact.includes("aucune donnée perdue") || impact.includes("non confirmé");
-        matchesHoveredStatus = isResolved;
-      } else if (hoveredSeverity === "unconfirmed") {
-        const impact = attack.impact.toLowerCase();
-        const isResolved = impact.includes("résolu") || impact.includes("restauré") || impact.includes("corrigé") || impact.includes("pas de paiement") || impact.includes("aucune donnée perdue") || impact.includes("non confirmé");
-        matchesHoveredStatus = !isResolved;
-      }
-      
       const matchesSearch =
         searchQuery === "" ||
         attack.victim.toLowerCase().includes(searchQuery.toLowerCase()) ||
         attack.hackers.toLowerCase().includes(searchQuery.toLowerCase()) ||
         attack.attackType.toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesDate && matchesYearRange && matchesType && matchesSeverity && matchesSector && matchesHoveredStatus && matchesSearch;
+      return matchesDate && matchesYearRange && matchesType && matchesSeverity && matchesSector && matchesSearch;
     });
-  }, [startDate, endDate, yearRange, selectedTypes, selectedSeverities, selectedSector, searchQuery, hoveredSeverity]);
+  }, [startDate, endDate, yearRange, selectedTypes, selectedSeverities, selectedSector, searchQuery]);
 
   const displayedAttacks = useMemo(() => {
     const yearToFilter = selectedYear ?? hoveredYear;
@@ -376,7 +363,6 @@ const Index = () => {
             selectedSector={selectedSector}
             resolvedCount={liveStats.resolved}
             unconfirmedCount={liveStats.unconfirmed}
-            onSeverityHover={setHoveredSeverity}
           />
 
           {/* Timeline Overlay */}
