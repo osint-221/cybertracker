@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 195 100% 50%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 195 100% 50%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 47% 11%;
+    --success: 142 71% 45%;
+    --success-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 195 100% 50%;
+    --radius: 0.5rem;
+    --chart-1: 195 100% 50%;
+    --chart-2: 0 72% 51%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 280 70% 55%;
+    --chart-5: 142 71% 45%;
+  }
+
+  .dark {
+    --background: 220 25% 8%;
+    --foreground: 210 40% 98%;
+    --card: 220 20% 12%;
+    --card-foreground: 210 40% 98%;
+    --popover: 220 20% 12%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 195 100% 50%;
+    --primary-foreground: 220 25% 8%;
+    --secondary: 220 18% 18%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 220 18% 18%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 195 100% 50%;
+    --accent-foreground: 220 25% 8%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 220 25% 8%;
+    --success: 142 71% 45%;
+    --success-foreground: 210 40% 98%;
+    --border: 220 18% 22%;
+    --input: 220 18% 22%;
+    --ring: 195 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .cyber-glow {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+
+  .cyber-border {
+    border: 1px solid hsl(var(--primary) / 0.3);
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 2px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+/* Pulsing marker animation for map incidents */
+@keyframes cyber-pulse-ring {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Animated arc flow effect */
+@keyframes arc-flow {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.arc-animated {
+  stroke-dasharray: 20 10;
+  animation: arc-flow 2s linear infinite;
+}
+
+/* Radar scan animation */
+@keyframes radar-scan {
+  0% {
+    transform: rotate(0deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.radar-scan {
+  animation: radar-scan 3s linear infinite;
+}
+
+/* Glitch text effect for headers */
+@keyframes glitch {
+  0% {
+    text-shadow: 2px 0 #ff0000, -2px 0 #00ffff;
+  }
+  25% {
+    text-shadow: -2px 0 #ff0000, 2px 0 #00ffff;
+  }
+  50% {
+    text-shadow: 2px 2px #ff0000, -2px -2px #00ffff;
+  }
+  75% {
+    text-shadow: -2px -2px #ff0000, 2px 2px #00ffff;
+  }
+  100% {
+    text-shadow: 2px 0 #ff0000, -2px 0 #00ffff;
+  }
+}
+
+.glitch-text {
+  animation: glitch 0.3s ease-in-out infinite;
+}
+
+/* Cyber grid background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
