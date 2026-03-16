@@ -1,73 +1,141 @@
-# Welcome to your Lovable project
+# CyberTracker SN
 
-## Project info
+> Cartographie des cyberattaques vérifiées et sourcées au Sénégal
 
-**URL**: https://lovable.dev/projects/19b0fdcf-feac-48fb-a8ff-41ef154a2088
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Status](https://img.shields.io/badge/status-Actif-green.svg)](#)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](#)
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## Présentation
 
-**Use Lovable**
+**CyberTracker SN** est une plateforme de suivi et de cartographie des cyberattaques ciblant le Sénégal. Elle permet de visualiser, analyser et documenter les incidents cybernétiques qui affectent les institutions gouvernementales, les entreprises et les citoyens.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/19b0fdcf-feac-48fb-a8ff-41ef154a2088) and start prompting.
+### Fonctionnalités principales
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Cartographie interactive** - Visualisation des attaques sur une carte interactive avec origine/destination des menaces
+- **Timeline dynamique** - Chronologie des événements avec filtrage par année et niveau de gravité
+- **Couverture médiatique** - Agrégation des sources d'information et réseaux sociaux
+- **Tableau de bord admin** - Interface d'administration pour la gestion des données
+- **Signalement d'incidents** - Formulaire de signalement pour les organisations victimes
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Stack technique
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Frontend
+- **React 18** - Framework UI
+- **TypeScript** - Langage typé
+- **Tailwind CSS** - Framework CSS
+- **shadcn/ui** - Composants UI
+- **Mapbox GL** - Cartographie interactive
+- **Recharts** - Visualisation de données
+- **Vite** - Build tool
 
-Follow these steps:
+### Backend
+- **Supabase** - Base de données PostgreSQL
+- **Authentication** - Gestion des utilisateurs
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Installation
 
-# Step 3: Install the necessary dependencies.
-npm i
+```bash
+# Cloner le repository
+git clone https://github.com/osint-221/cybertracker.git
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Naviguer dans le dossier
+cd cybertracker
+
+# Installer les dépendances
+npm install
+
+# Démarrer le serveur de développement
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Configuration
 
-**Use GitHub Codespaces**
+### Variables d'environnement
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Créer un fichier `.env` à la racine du projet:
 
-## What technologies are used for this project?
+```env
+VITE_SUPABASE_URL=votre_supabase_url
+VITE_SUPABASE_PUBLISHABLE_KEY=votre_cle_publique
+VITE_MAPBOX_TOKEN=votre_token_mapbox
+```
 
-This project is built with:
+### Base de données
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Le fichier `scripts/data.sql` contient toutes les requêtes SQL pour initialiser les tables et insérer les données.
 
-## How can I deploy this project?
+1. Créer un projet [Supabase](https://supabase.com)
+2. Exécuter le script SQL dans l'éditeur Supabase
+3. Configurer les variables d'environnement
 
-Simply open [Lovable](https://lovable.dev/projects/19b0fdcf-feac-48fb-a8ff-41ef154a2088) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## Structure du projet
 
-Yes, you can!
+```
+├── public/                 # Fichiers statiques
+├── scripts/               # Scripts SQL
+├── src/
+│   ├── components/       # Composants React
+│   │   ├── admin/       # Composants admin
+│   │   └── ui/         # Composants UI (shadcn)
+│   ├── data/            # Données statiques
+│   ├── hooks/           # Hooks React
+│   ├── integrations/    # Intégrations (Supabase)
+│   ├── lib/            # Utilitaires
+│   └── pages/          # Pages principales
+├── supabase/            # Migrations Supabase
+└── Configuration
+    ├── tailwind.config.ts
+    ├── vite.config.ts
+    └── tsconfig.json
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Contribution
+
+Les contributions sont les bienvenues! Veuillez lire [CONTRIBUTING.md](./CONTRIBUTING.md) pour plus de détails.
+
+---
+
+## Licence
+
+MIT License - voir [LICENSE](./LICENSE) pour plus de détails.
+
+---
+
+## Auteurs
+
+- **OSINT-221** - [https://osint-221.com](https://osint-221.com)
+
+---
+
+## Remerciements
+
+- [ANSSI](https://ssi.gouv.fr) - Agence nationale de la sécurité des systèmes d'information
+- [CERT-SN](https://cert.sn) - Centre d'opérations de réponse aux urgences informatiques du Sénégal
+- [PressAfrik](https://www.pressafrik.com) - Média d'investigation
+
+---
+
+## Contact
+
+Pour toute question ou suggestion:
+- Email: contact@osint-221.com
+- Twitter: [@OSINT221](https://twitter.com/OSINT221)
+
+---
+
+<p align="center">
+  <sub>Propulsé par OSINT-221 | Surveillance active des cybermenaces au Sénégal</sub>
+</p>
