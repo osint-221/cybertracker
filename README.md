@@ -116,24 +116,16 @@ MIT License - voir [LICENSE](./LICENSE) pour plus de détails.
 
 ## Auteurs
 
-**OSINT-221** - [https://osint-221.com](https://osint-221.com)
+**OSINT-221** - [https://osint-221.com](https://osint-221.vercel.app/)
 > Organisation de recherche en source ouverte spécialisée dans la cybersécurité et la veille des menaces numériques en Afrique de l'Ouest.
-
----
-
-## Remerciements
-
-- [ANSSI](https://ssi.gouv.fr) - Agence nationale de la sécurité des systèmes d'information
-- [CERT-SN](https://cert.sn) - Centre d'opérations de réponse aux urgences informatiques du Sénégal
-- [PressAfrik](https://www.pressafrik.com) - Média d'investigation
 
 ---
 
 ## Contact
 
 Pour toute question ou suggestion:
-- Email: contact@osint-221.com
-- Twitter: [@OSINT221](https://twitter.com/OSINT221)
+- Email: osint221@gmail.com
+- Canal Discord: [@OSINT221](https://discord.gg/wHv92gJj)
 
 ---
 
