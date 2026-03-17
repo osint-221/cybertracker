@@ -183,13 +183,34 @@ export const AttackDetailSheet = ({ attack, onClose }: AttackDetailSheetProps) =
           </div>
 
           {/* CVE */}
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-white/50">
-              <Bug className="h-3.5 w-3.5" />
-              <span className="text-xs font-semibold uppercase tracking-wider">CVE associés</span>
+          {attack.cve && (
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-white/50">
+                <Bug className="h-3.5 w-3.5" />
+                <span className="text-xs font-semibold uppercase tracking-wider">CVE associés</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {attack.cve.split(',').map((cve, idx) => (
+                  <a
+                    key={idx}
+                    href={`https://nvd.nist.gov/vuln/detail/${cve.trim()}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={attack.cveNotes || ""}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/20 border border-red-500/30 hover:bg-red-500/40 transition-colors cursor-pointer"
+                  >
+                    <span className="text-sm font-mono text-red-400">{cve.trim()}</span>
+                    <ExternalLink className="h-3 w-3 text-red-400/70" />
+                  </a>
+                ))}
+              </div>
+              {attack.cveSource && (
+                <p className="text-xs text-white/40 mt-1">
+                  Sources : {attack.cveSource}
+                </p>
+              )}
             </div>
-            <p className="text-sm text-white/40 italic">Aucun CVE référencé</p>
-          </div>
+          )}
 
           <Separator className="bg-white/10" />
 

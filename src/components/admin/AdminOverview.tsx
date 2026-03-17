@@ -102,14 +102,15 @@ export const AdminOverview = () => {
 
   return (
     <div className="p-6 space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Vue d'ensemble</h1>
-          <p className="text-sm text-muted-foreground">Statistiques et indicateurs clés</p>
-        </div>
-        <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
-          Dernière mise à jour: {new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' })}
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">Vue d'ensemble</h1>
+        <p className="text-muted-foreground text-sm">Statistiques et activité du système</p>
+      </div>
+
+      {/* Stats cards */}
+      <div className="text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full inline-flex items-center gap-2">
+        <Clock className="h-3 w-3" />
+        Dernière mise à jour: {new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' })}
       </div>
 
       {/* KPI Cards */}

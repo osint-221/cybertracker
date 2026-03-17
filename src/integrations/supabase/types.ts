@@ -167,6 +167,10 @@ export type Database = {
         Row: {
           attack_type: string
           created_at: string
+          cve: string | null
+          cve_source: string | null
+          cve_notes: string | null
+          cve_confidence: string | null
           date: string
           description: string | null
           hacker_group: string | null
@@ -184,6 +188,10 @@ export type Database = {
         Insert: {
           attack_type: string
           created_at?: string
+          cve?: string | null
+          cve_source?: string | null
+          cve_notes?: string | null
+          cve_confidence?: string | null
           date: string
           description?: string | null
           hacker_group?: string | null
@@ -201,6 +209,10 @@ export type Database = {
         Update: {
           attack_type?: string
           created_at?: string
+          cve?: string | null
+          cve_source?: string | null
+          cve_notes?: string | null
+          cve_confidence?: string | null
           date?: string
           description?: string | null
           hacker_group?: string | null

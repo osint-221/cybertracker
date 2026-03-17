@@ -10,9 +10,10 @@ import { AttackDetailSheet } from "@/components/AttackDetailSheet";
 import { ReportIncidentDialog } from "@/components/ReportIncident";
 import { supabase } from "@/integrations/supabase/client";
 import { cyberAttacksData, CyberAttack, SeverityLevel } from "@/data/cyberattacks";
-import { Calendar, X, Radar, AlertTriangle, Activity, TrendingUp, Shield, Globe, Target, Loader2 } from "lucide-react";
+import { Calendar, X, Radar, AlertTriangle, Activity, TrendingUp, Shield, Globe, Target, Loader2, ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const severityColors: Record<SeverityLevel, string> = {
   critique: "bg-red-500",
@@ -46,9 +47,10 @@ const Index = () => {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedAttack, setSelectedAttack] = useState<CyberAttack | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const [cyberThreats, setCyberThreats] = useState(13100000);
+  const [cyberThreats, setCyberThreats] = useState(13500000);
   const [loading, setLoading] = useState(true);
   const [attacks, setAttacks] = useState<CyberAttack[]>([]);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   
   useEffect(() => {
     const fetchAttacks = async () => {
@@ -66,7 +68,7 @@ const Index = () => {
       }
       
       try {
-        const { data } = await supabase.from("cyberattacks").select("*").order("date", { ascending: false });
+        const { data, error } = await supabase.from("cyberattacks").select("*").order("date", { ascending: false });
         
         if (data && data.length > 0) {
           // Default sources based on attack characteristics
@@ -145,6 +147,10 @@ const Index = () => {
               icon: "📍",
               sources: getDefaultSources(item.attack_type || '', item.severity || ''),
               isActive: item.is_active,
+              // Handle CVE as array or string
+              cve: item.cve ? (Array.isArray(item.cve) ? item.cve.join(', ') : item.cve) : undefined,
+              cveSource: item.cve_source ? (Array.isArray(item.cve_source) ? item.cve_source.join(', ') : item.cve_source) : undefined,
+              cveNotes: item.cve_notes ? (Array.isArray(item.cve_notes) ? item.cve_notes.join(', ') : item.cve_notes) : undefined,
             };
           });
           setAttacks(mapped);
@@ -152,7 +158,6 @@ const Index = () => {
           setAttacks(cyberAttacksData);
         }
       } catch (error) {
-        // Fallback to local data on error
         console.warn("Supabase connection failed, using local data:", error);
         setAttacks(cyberAttacksData);
       }
@@ -280,15 +285,15 @@ const Index = () => {
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-background">
       {/* Minimal Header */}
-      <div className="h-12 flex items-center justify-between px-4 border-b border-border bg-card/50 backdrop-blur flex-shrink-0">
-        <div className="flex items-center gap-4">
+      <div className="h-12 flex items-center justify-between px-2 md:px-4 border-b border-border bg-card/50 backdrop-blur flex-shrink-0">
+        <div className="flex items-center gap-2 md:gap-4">
           <a href="/" className="flex flex-col">
-            <span className="text-lg font-bold tracking-wider text-foreground hover:text-foreground/80 transition-colors" style={{ fontFamily: "'Orbitron', sans-serif", textShadow: "0 0 10px hsl(var(--primary) / 0.5)" }}>
-              Cyber<span className="text-primary">Tracker</span> <span className="text-primary text-xs tracking-widest opacity-70">SN</span>
+            <span className="text-base md:text-lg font-bold tracking-wider text-foreground hover:text-foreground/80 transition-colors" style={{ fontFamily: "'Orbitron', sans-serif", textShadow: "0 0 10px hsl(var(--primary) / 0.5)" }}>
+              Cyber<span className="text-primary">Tracker</span> <span className="text-primary text-[10px] md:text-xs tracking-widest opacity-70">SN</span>
             </span>
-            <span className="text-[10px] text-muted-foreground/60 italic">by OSINT-221</span>
+            <span className="text-[8px] md:text-[10px] text-muted-foreground/60 italic hidden sm:inline">by OSINT-221</span>
           </a>
-          <div className="hidden md:flex items-center gap-3 px-3 py-1.5 bg-background/80 backdrop-blur border border-border rounded-lg">
+          <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 bg-background/80 backdrop-blur border border-border rounded-lg">
             <div className="flex items-center gap-1.5">
               <Activity className="h-4 w-4 text-red-500 animate-pulse" />
               <span className="text-xs text-muted-foreground">Cybermenaces:</span>
@@ -303,25 +308,60 @@ const Index = () => {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1">
+          <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="md:hidden h-8 w-8 p-0" title="Filtres">
+                <ListFilter className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 p-0 overflow-hidden">
+              <SidePanel
+                attacks={displayedAttacks}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                selectedTypes={selectedTypes}
+                onTypeChange={setSelectedTypes}
+                selectedSeverities={selectedSeverities}
+                onSeverityChange={setSelectedSeverities}
+          onAttackClick={(attack) => { 
+            setSelectedAttack(attack); 
+            setMobileFiltersOpen(false); 
+          }}
+                startDate={startDate}
+                endDate={endDate}
+                onStartDateChange={setStartDate}
+                onEndDateChange={setEndDate}
+                selectedSector={selectedSector}
+                onSectorChange={setSelectedSector}
+                defaultCollapsed={false}
+                forceExpanded={true}
+              />
+            </SheetContent>
+          </Sheet>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setReportOpen(true)}
-            className="gap-1.5"
+            className="h-8"
             title="Signaler une cybermenace"
           >
             <AlertTriangle className="h-4 w-4 text-amber-500" />
-            <span className="hidden sm:inline">Signaler</span>
+            <span className="hidden md:inline ml-1">Signaler</span>
           </Button>
           <Link to="/live">
-            <Button variant="outline" size="sm" className="gap-1.5" title="Voir les attaques en direct">
+            <Button variant="outline" size="sm" className="h-8" title="Voir les attaques en direct">
               <Radar className="h-4 w-4 text-red-500 animate-spin" style={{ animationDuration: '3s' }} />
-              <span className="hidden sm:inline">Live</span>
+              <span className="hidden md:inline ml-1">Live</span>
             </Button>
           </Link>
-          <AboutDialog />
-          <ThemeToggle />
+          <div className="hidden md:flex items-center gap-1">
+            <AboutDialog />
+            <ThemeToggle />
+          </div>
+          <div className="md:hidden">
+            <AboutDialog />
+          </div>
         </div>
       </div>
 
@@ -355,7 +395,7 @@ const Index = () => {
         />
 
         {/* Map */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-h-[400px] md:min-h-0">
           <ThreatMap 
             attacks={displayedAttacks} 
             onAttackClick={setSelectedAttack}
@@ -392,10 +432,11 @@ const Index = () => {
               variant="secondary"
               size="sm"
               onClick={() => setShowTimeline(true)}
-              className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 gap-1.5 shadow-lg animate-pulse"
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 md:bottom-3 z-20 gap-1.5 shadow-lg animate-pulse"
             >
               <Calendar className="h-4 w-4" />
-              Afficher Timeline
+              <span className="hidden sm:inline">Afficher Timeline</span>
+              <span className="sm:hidden">Timeline</span>
             </Button>
           )}
         </div>

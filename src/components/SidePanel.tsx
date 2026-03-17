@@ -33,6 +33,8 @@ interface SidePanelProps {
   onEndDateChange: (date: Date | undefined) => void;
   selectedSector: string | null;
   onSectorChange: (sector: string | null) => void;
+  defaultCollapsed?: boolean;
+  forceExpanded?: boolean;
 }
 
 const severityLevels: SeverityLevel[] = ["critique", "élevé", "moyen", "faible"];
@@ -81,15 +83,19 @@ export const SidePanel = ({
   onEndDateChange,
   selectedSector,
   onSectorChange,
+  defaultCollapsed = false,
+  forceExpanded = false,
 }: SidePanelProps) => {
   const isMobile = useIsMobile();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
-    if (isMobile) {
+    if (isMobile && !defaultCollapsed && !forceExpanded) {
       setIsCollapsed(true);
+    } else if (forceExpanded) {
+      setIsCollapsed(false);
     }
-  }, [isMobile]);
+  }, [isMobile, defaultCollapsed, forceExpanded]);
 
   const onTypeToggle = (type: string) => {
     const newTypes = selectedTypes.includes(type)
@@ -144,13 +150,13 @@ export const SidePanel = ({
     <div
       className={cn(
         "h-full bg-background/95 backdrop-blur border-r border-border flex flex-col transition-all duration-300 relative shadow-xl",
-        isCollapsed ? "w-14" : "w-80"
+        forceExpanded ? "flex w-80" : isCollapsed ? "hidden md:flex w-14" : "hidden md:flex w-80"
       )}
       style={{
-        overflow: isCollapsed ? 'hidden' : 'auto',
+        overflow: (isCollapsed && !forceExpanded) ? 'hidden' : 'auto',
       }}
     >
-      {isCollapsed && (
+      {isCollapsed && !forceExpanded && (
         <div className="flex flex-col items-center gap-2 p-2">
           <button
             onClick={() => setIsCollapsed(false)}
@@ -195,25 +201,27 @@ export const SidePanel = ({
             )}
           </div>
         )}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className={cn(
-            "flex items-center justify-center rounded-lg transition-all duration-200",
-            isCollapsed
-              ? "h-8 w-8 hover:bg-primary/10 hover:text-primary"
-              : "h-7 px-2 gap-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-          aria-label={isCollapsed ? "Étendre le panneau" : "Réduire le panneau"}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <>
-              <ChevronLeft className="h-3.5 w-3.5" />
-              <span>Réduire</span>
-            </>
-          )}
-        </button>
+        {!forceExpanded && (
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className={cn(
+              "flex items-center justify-center rounded-lg transition-all duration-200",
+              isCollapsed
+                ? "h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                : "h-7 px-2 gap-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+            aria-label={isCollapsed ? "Étendre le panneau" : "Réduire le panneau"}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <>
+                <ChevronLeft className="h-3.5 w-3.5" />
+                <span>Réduire</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {!isCollapsed && (

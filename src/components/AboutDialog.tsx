@@ -24,18 +24,18 @@ export const AboutDialog = () => {
 
         <div className="space-y-6 mt-4">
           {/* Stats Banner */}
-          <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-primary/10 via-destructive/10 to-primary/10 rounded-xl border border-border">
+          <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-cyan-50 via-amber-50 to-cyan-50 dark:from-primary/10 dark:via-destructive/10 dark:to-primary/10 rounded-xl border border-border shadow-sm">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">28</div>
-              <div className="text-xs text-muted-foreground">Incidents documentés</div>
+              <div className="text-3xl font-bold text-cyan-700 dark:text-cyan-500">28</div>
+              <div className="text-xs font-medium text-slate-700 dark:text-muted-foreground">Incidents documentés</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-destructive">2005-2026</div>
-              <div className="text-xs text-muted-foreground">Période couverte</div>
+              <div className="text-3xl font-bold text-red-700 dark:text-red-500">2005-2026</div>
+              <div className="text-xs font-medium text-slate-700 dark:text-muted-foreground">Période couverte</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-500">15+</div>
-              <div className="text-xs text-muted-foreground">Pays sources identifiés</div>
+              <div className="text-3xl font-bold text-green-700 dark:text-green-500">15+</div>
+              <div className="text-xs font-medium text-slate-700 dark:text-muted-foreground">Pays sources identifiés</div>
             </div>
           </div>
 
@@ -132,6 +132,10 @@ export const AboutDialog = () => {
               <li className="flex items-center gap-2">
                 <ExternalLink className="h-3 w-3" />
                 Checkpoint / PT Security Analytics - Rapports de threat intelligence
+              </li>
+              <li className="flex items-center gap-2">
+                <ExternalLink className="h-3 w-3" />
+                RansomLook - Suivi des ransomwares et groupes de hackers
               </li>
               <li className="flex items-center gap-2">
                 <ExternalLink className="h-3 w-3" />

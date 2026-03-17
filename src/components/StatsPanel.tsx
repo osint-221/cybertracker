@@ -19,9 +19,23 @@ export const StatsPanel = ({ attacks }: StatsPanelProps) => {
     const typeCount: Record<string, number> = {};
     const categoryCount: Record<string, number> = {};
     const yearCount: Record<string, number> = {};
+
+    const normalizeType = (type: string): string => {
+      const normalized = type.toLowerCase().trim();
+      if (normalized.includes("phishing") || normalized.includes("arnaque")) return "Phishing";
+      if (normalized.includes("ransomware")) return "Ransomware";
+      if (normalized.includes("ddos")) return "DDoS";
+      if (normalized.includes("malware")) return "Malware";
+      if (normalized.includes("défacing") || normalized.includes("défiguration")) return "Défiguration";
+      if (normalized.includes("intrusion")) return "Intrusion";
+      if (normalized.includes("fraude")) return "Fraude";
+      if (normalized.includes("extorsion")) return "Extorsion";
+      return type;
+    };
     
     attacks.forEach((attack) => {
-      typeCount[attack.attackType] = (typeCount[attack.attackType] || 0) + 1;
+      const normalizedType = normalizeType(attack.attackType);
+      typeCount[normalizedType] = (typeCount[normalizedType] || 0) + 1;
       categoryCount[attack.dataCategory] = (categoryCount[attack.dataCategory] || 0) + 1;
       if (attack.year) {
         yearCount[attack.year.toString()] = (yearCount[attack.year.toString()] || 0) + 1;

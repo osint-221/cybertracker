@@ -3,7 +3,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { CyberAttack, severityColors, SeverityLevel } from "@/data/cyberattacks";
 import { Button } from "@/components/ui/button";
-import { Info, Download, BarChart3, Target, Globe, Map, MapIcon, Layers, ChevronDown, ChevronUp } from "lucide-react";
+import { Info, Download, BarChart3, Target, Globe, Map, MapIcon, Layers, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StatsPanel } from "@/components/StatsPanel";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -123,7 +123,7 @@ function generateMapData(attacks: CyberAttack[], filterSeverity?: SeverityLevel)
   };
 }
 
-export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCount = 0, unconfirmedCount = 0 }: ThreatMapProps) => {
+export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], selectedSector, resolvedCount = 0, unconfirmedCount = 0 }: ThreatMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [showStats, setShowStats] = useState(false);
@@ -269,55 +269,114 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
 
     mapboxgl.accessToken = mapboxToken;
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: [0, 10],
-      zoom: 1.2,
-      pitch: 0,
-      bearing: 0,
-      projection: "mercator",
-      attributionControl: false,
-    });
+    // Force container to have proper dimensions before initialization
+    const container = mapContainer.current;
+    const parent = container.parentElement;
 
-    map.current.on("style.load", () => addLayers());
+    const initMap = () => {
+      if (!map.current) {
+        map.current = new mapboxgl.Map({
+          container: container,
+          style: "mapbox://styles/mapbox/dark-v11",
+          center: [0, 10],
+          zoom: 1.2,
+          pitch: 0,
+          bearing: 0,
+          projection: "mercator",
+          attributionControl: false,
+        });
 
-    map.current.on("click", "source-points", (e) => {
-      if (e.features && e.features[0]?.properties?.attacksList) {
-        const attackIds = JSON.parse(e.features[0].properties.attacksList) as string[];
-        const relatedAttacks = attacks.filter(a => attackIds.includes(a.id));
-        if (relatedAttacks.length > 0 && onAttackClick) {
-          onAttackClick(relatedAttacks[0]);
-        }
+        map.current.on("style.load", () => addLayers());
+        map.current.on("load", () => {
+          if (map.current) map.current.resize();
+        });
+
+        map.current.on("click", "source-points", (e) => {
+          if (e.features && e.features[0]?.properties?.attacksList) {
+            const attackIds = JSON.parse(e.features[0].properties.attacksList) as string[];
+            const relatedAttacks = attacks.filter(a => attackIds.includes(a.id));
+            if (relatedAttacks.length > 0 && onAttackClick) {
+              onAttackClick(relatedAttacks[0]);
+            }
+          }
+        });
+
+        map.current.on("mouseenter", "source-points", () => {
+          const canvas = map.current?.getCanvas();
+          if (canvas) canvas.style.cursor = "pointer";
+        });
+
+        map.current.on("mouseleave", "source-points", () => {
+          const canvas = map.current?.getCanvas();
+          if (canvas) canvas.style.cursor = "";
+        });
       }
-    });
+    };
 
-    map.current.on("mouseenter", "source-points", () => {
-      const canvas = map.current?.getCanvas();
-      if (canvas) canvas.style.cursor = "pointer";
-    });
-
-    map.current.on("mouseleave", "source-points", () => {
-      const canvas = map.current?.getCanvas();
-      if (canvas) canvas.style.cursor = "";
-    });
+    // Ensure container has dimensions before initializing
+    if (parent) {
+      const ensureDimensions = () => {
+        if (parent.offsetHeight > 0) {
+          initMap();
+        } else {
+          // Wait for parent to have dimensions
+          setTimeout(ensureDimensions, 100);
+        }
+      };
+      ensureDimensions();
+    } else {
+      initMap();
+    }
 
     const handleResize = () => {
-      if (map.current) map.current.resize();
+      if (map.current) {
+        setTimeout(() => {
+          if (map.current) map.current.resize();
+        }, 100);
+      }
     };
     window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
       map.current?.remove();
       map.current = null;
     };
   }, []);
 
   useEffect(() => {
-    if (!map.current?.isStyleLoaded()) return;
-    addLayers();
-  }, [attacks, severityFilter, addLayers]);
+    if (!map.current) return;
+
+    const updateMapData = () => {
+      if (!map.current || !map.current.isStyleLoaded()) return;
+
+      const { arcs, sources } = generateMapData(attacks, severityFilter === "all" ? undefined : severityFilter);
+
+      const arcsSource = map.current.getSource("arcs") as mapboxgl.GeoJSONSource;
+      const sourcesSource = map.current.getSource("sources") as mapboxgl.GeoJSONSource;
+
+      if (arcsSource) {
+        arcsSource.setData(arcs);
+      }
+      if (sourcesSource) {
+        sourcesSource.setData(sources);
+      }
+    };
+
+    if (!map.current.isStyleLoaded()) {
+      const styleLoadHandler = () => {
+        updateMapData();
+      };
+      map.current.on("style.load", styleLoadHandler);
+      return () => {
+        map.current?.off("style.load", styleLoadHandler);
+      };
+    }
+
+    updateMapData();
+  }, [attacks, severityFilter, selectedSector]);
 
   const handleDownloadPDF = () => {
     const pdf = new jsPDF();
@@ -777,24 +836,24 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
           </div>
         </div>
       ) : (
-        <div ref={mapContainer} className="absolute inset-0 bg-background" />
+        <div ref={mapContainer} className="absolute inset-0 bg-background w-full h-full" />
       )}
 
       {/* Top Left - Stats Card - Optimized */}
       <div className="absolute top-4 left-4 z-10">
-        <div className="bg-background/60 backdrop-blur-md border border-border/50 rounded-lg w-44">
+        <div className="bg-white/90 dark:bg-background/40 backdrop-blur-md border border-border/50 rounded-lg w-44 shadow-lg">
           {/* Main stats */}
           <div className="p-2.5 space-y-2">
             <div className="flex items-end gap-1.5">
-              <span className="text-2xl font-bold text-foreground leading-none">{stats.total}</span>
-              <span className="text-sm text-muted-foreground pb-0.5">incidents</span>
+              <span className="text-2xl font-bold text-slate-800 dark:text-foreground leading-none">{stats.total}</span>
+              <span className="text-sm text-slate-700 dark:text-muted-foreground pb-0.5">incidents</span>
             </div>
-            <div className="text-[10px] text-muted-foreground/70">vérifiés et sourcés</div>
+            <div className="text-[10px] text-slate-500 dark:text-muted-foreground/70">vérifiés et sourcés</div>
 
             {/* Status row */}
             <div className="flex gap-3 pt-1 text-[10px] border-t border-border/30">
-              <span className="text-green-500 font-medium">{resolvedCount} résolus</span>
-              <span className="text-cyan-500 font-medium">{unconfirmedCount} non confirmés</span>
+              <span className="text-green-700 dark:text-green-500 font-bold">{resolvedCount} résolus</span>
+              <span className="text-blue-700 dark:text-cyan-500 font-bold">{unconfirmedCount} non confirmés</span>
             </div>
           </div>
 
@@ -848,37 +907,20 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], resolvedCou
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0 bg-background/95 backdrop-blur border-border" title="Légende">
-              <Info className="h-4 w-4" />
+            <Button variant="outline" size="sm" className="h-9 w-9 p-0 bg-background/95 backdrop-blur border-border" title="Gravité">
+              <TrendingUp className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent side="left" className="w-60 p-4">
-            <h4 className="font-semibold text-sm mb-3">Légende</h4>
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-red-500 border border-white" />
-                <div>
-                  <div className="font-medium">Sénégal</div>
-                  <div className="text-muted-foreground">Cible des attaques</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-cyan-500 border-2 border-white" />
-                <div>
-                  <div className="font-medium">Pays source</div>
-                  <div className="text-muted-foreground">Cliquer pour voir les détails</div>
-                </div>
-              </div>
-              <div className="border-t pt-3 mt-3">
-                <div className="text-muted-foreground mb-2">Gravité</div>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(SEVERITY_CONFIG).map(([sev, c]) => (
-                    <div key={sev} className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
-                      <span className="capitalize text-[10px]">{c.label}</span>
-                    </div>
-                  ))}
-                </div>
+          <PopoverContent side="left" className="w-48 p-3">
+            <div className="space-y-2 text-xs">
+              <h4 className="font-semibold text-sm mb-2">Gravité</h4>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(SEVERITY_CONFIG).map(([sev, c]) => (
+                  <div key={sev} className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: c.color }} />
+                    <span className="capitalize text-[10px]">{c.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </PopoverContent>

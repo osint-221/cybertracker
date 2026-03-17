@@ -26,6 +26,9 @@ export interface CyberAttack {
   severity: SeverityLevel;
   sources?: AttackSource[];
   isActive?: boolean;
+  cve?: string;
+  cveSource?: string;
+  cveNotes?: string;
 }
 
 const defaultSources: AttackSource[] = [
@@ -572,9 +575,11 @@ export const cyberAttacksData: CyberAttack[] = [
 ];
 
 export const attackTypeColors: Record<string, string> = {
+  "Phishing": "hsl(0 72% 51%)",
   "Phishing/Arnaque": "hsl(0 72% 51%)",
   "Malware": "hsl(38 92% 50%)",
   "Défiguration": "hsl(195 100% 50%)",
+  "Intrusion": "hsl(142 71% 45%)",
   "Intrusion interne": "hsl(142 71% 45%)",
   "Ransomware": "hsl(280 70% 55%)",
   "DDoS": "hsl(38 92% 50%)",
@@ -596,16 +601,16 @@ export const severityScores: Record<SeverityLevel, number> = {
   "faible": 1,
 };
 
-import { 
-  Fish, 
-  Bug, 
-  AlertTriangle, 
-  UserX, 
-  Lock, 
-  Zap, 
-  CreditCard, 
+import {
+  Fish,
+  Bug,
+  AlertTriangle,
+  UserX,
+  Lock,
+  Zap,
+  CreditCard,
   DollarSign,
-  LucideIcon 
+  LucideIcon
 } from "lucide-react";
 
 export const attackTypeIcons: Record<string, LucideIcon> = {
