@@ -51,25 +51,25 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [attacks, setAttacks] = useState<CyberAttack[]>([]);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  
+
   useEffect(() => {
     const fetchAttacks = async () => {
       setLoading(true);
-      
+
       // Check if Supabase is configured
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      
+
       if (!supabaseUrl || !supabaseKey) {
         // Use local data if Supabase is not configured
         setAttacks(cyberAttacksData);
         setLoading(false);
         return;
       }
-      
+
       try {
         const { data, error } = await supabase.from("cyberattacks").select("*").order("date", { ascending: false });
-        
+
         if (data && data.length > 0) {
           // Default sources based on attack characteristics
           const getDefaultSources = (attackType: string, severity: string) => {
@@ -78,7 +78,7 @@ const Index = () => {
               { country: "Cameroun", countryCode: "CM", lat: 7.3697, lng: 12.3547, percentage: 20 },
               { country: "International", countryCode: "INT", lat: 0, lng: 0, percentage: 45 },
             ];
-            
+
             // Adjust sources based on attack type
             if (attackType.toLowerCase().includes('ransomware')) {
               return [
@@ -96,12 +96,12 @@ const Index = () => {
             }
             return defaultSources;
           };
-          
+
           const mapped: CyberAttack[] = data.map((item) => {
             const dateStr = item.date;
             let year = 2024;
             let month = 1;
-            
+
             // Handle format jj/mm/aaaa (e.g., "31/01/2026")
             if (dateStr.includes("/")) {
               const parts = dateStr.split("/");
@@ -118,17 +118,17 @@ const Index = () => {
             } else if (!isNaN(parseInt(dateStr))) {
               year = parseInt(dateStr);
             }
-            
+
             const severityMap: Record<string, SeverityLevel> = {
               "critique": "critique",
               "élevé": "élevé",
               "moyen": "moyen",
               "faible": "faible"
             };
-            
+
             const lat = item.lat || (14.7167 + (Math.random() - 0.5) * 0.15);
             const lng = item.lng || (-17.4677 + (Math.random() - 0.5) * 0.15);
-            
+
             return {
               id: item.id,
               victim: item.victim,
@@ -163,15 +163,15 @@ const Index = () => {
       }
       setLoading(false);
     };
-    
+
     fetchAttacks();
   }, []);
-  
+
   const cyberAttacks = attacks.length > 0 ? attacks : cyberAttacksData;
-  
+
   // Calculate stats from actual data
   const totalIncidents = cyberAttacks.length;
-  
+
   // Count resolved incidents based on impact keywords
   const resolvedCount = cyberAttacks.filter(attack => {
     const impact = attack.impact.toLowerCase();
@@ -184,18 +184,18 @@ const Index = () => {
       impact.includes("non confirmé")
     );
   }).length;
-  
+
   const unconfirmedCount = totalIncidents - resolvedCount;
-  
+
   // Get unique countries of origin
   const uniqueCountries = new Set(
     cyberAttacks.flatMap(a => a.sources?.map(s => s.country) || []).filter(c => c !== "International")
   ).size;
-  
+
   // Most common attack type - based on Kaspersky 2024 report for West Africa
   const mostCommonAttack = "Phishing/Ingénierie sociale";
   const mostCommonPercentage = 40; // 35-45% estimated for 2026
-  
+
   const liveStats = {
     incidents: totalIncidents,
     resolved: resolvedCount,
@@ -237,7 +237,7 @@ const Index = () => {
     const daysInYear = 366;
     const daysPassed = 73; // March 14, 2026
     const dailyIncrease = (targetThreats - baseThreats) / daysInYear;
-    
+
     const initialValue = Math.floor(baseThreats + (dailyIncrease * daysPassed));
     setCyberThreats(initialValue);
 
@@ -256,14 +256,14 @@ const Index = () => {
         if (startDate && attackDate < startDate) matchesDate = false;
         if (endDate && attackDate > endDate) matchesDate = false;
       }
-      
+
       // Year range from Timeline
       const matchesYearRange = attack.year >= yearRange[0] && attack.year <= yearRange[1];
-      
+
       const matchesType = selectedTypes.length === 0 || selectedTypes.includes(attack.attackType);
       const matchesSeverity = selectedSeverities.length === 0 || selectedSeverities.includes(attack.severity);
       const matchesSector = selectedSector === null || classifySector(attack.victim) === selectedSector;
-      
+
       const matchesSearch =
         searchQuery === "" ||
         attack.victim.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -297,7 +297,7 @@ const Index = () => {
             <div className="flex items-center gap-1.5">
               <Activity className="h-4 w-4 text-red-500 animate-pulse" />
               <span className="text-xs text-muted-foreground">Cybermenaces:</span>
-              <span className="text-sm font-bold text-red-500">{(cyberThreats / 1000000).toFixed(1)}M</span>
+              <span className="text-sm font-bold text-red-500">~3.1M</span>
               <span className="text-[10px] text-green-500">+18%</span>
             </div>
             <div className="w-px h-4 bg-border" />
@@ -324,10 +324,10 @@ const Index = () => {
                 onTypeChange={setSelectedTypes}
                 selectedSeverities={selectedSeverities}
                 onSeverityChange={setSelectedSeverities}
-          onAttackClick={(attack) => { 
-            setSelectedAttack(attack); 
-            setMobileFiltersOpen(false); 
-          }}
+                onAttackClick={(attack) => {
+                  setSelectedAttack(attack);
+                  setMobileFiltersOpen(false);
+                }}
                 startDate={startDate}
                 endDate={endDate}
                 onStartDateChange={setStartDate}
@@ -375,72 +375,72 @@ const Index = () => {
             </div>
           </div>
         ) : (
-        <>
-          {/* Side Panel */}
-        <SidePanel
-          attacks={displayedAttacks}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          selectedTypes={selectedTypes}
-          onTypeChange={setSelectedTypes}
-          selectedSeverities={selectedSeverities}
-          onSeverityChange={setSelectedSeverities}
-          onAttackClick={setSelectedAttack}
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
-          selectedSector={selectedSector}
-          onSectorChange={setSelectedSector}
-        />
+          <>
+            {/* Side Panel */}
+            <SidePanel
+              attacks={displayedAttacks}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedTypes={selectedTypes}
+              onTypeChange={setSelectedTypes}
+              selectedSeverities={selectedSeverities}
+              onSeverityChange={setSelectedSeverities}
+              onAttackClick={setSelectedAttack}
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              selectedSector={selectedSector}
+              onSectorChange={setSelectedSector}
+            />
 
-        {/* Map */}
-        <div className="flex-1 relative min-h-[400px] md:min-h-0">
-          <ThreatMap 
-            attacks={displayedAttacks} 
-            onAttackClick={setSelectedAttack}
-            allAttacks={filteredAttacks}
-            selectedSector={selectedSector}
-            resolvedCount={liveStats.resolved}
-            unconfirmedCount={liveStats.unconfirmed}
-          />
-
-          {/* Timeline Overlay */}
-          {showTimeline && (
-            <div className="absolute bottom-0 left-0 right-0 z-10 bg-background/20 backdrop-blur-sm border-t border-border/30 p-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowTimeline(false)}
-                className="absolute top-2 right-2 h-6 w-6 z-20"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-              <Timeline 
-                attacks={cyberAttacks} 
-                yearRange={yearRange} 
-                onYearRangeChange={setYearRange}
-                onYearHover={setHoveredYear}
-                onYearClick={setSelectedYear}
+            {/* Map */}
+            <div className="flex-1 relative min-h-[400px] md:min-h-0">
+              <ThreatMap
+                attacks={displayedAttacks}
+                onAttackClick={setSelectedAttack}
+                allAttacks={filteredAttacks}
+                selectedSector={selectedSector}
+                resolvedCount={liveStats.resolved}
+                unconfirmedCount={liveStats.unconfirmed}
               />
-            </div>
-          )}
 
-          {/* Timeline Toggle Button - Only show when timeline is hidden */}
-          {!showTimeline && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowTimeline(true)}
-              className="absolute bottom-4 left-1/2 -translate-x-1/2 md:bottom-3 z-20 gap-1.5 shadow-lg animate-pulse"
-            >
-              <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Afficher Timeline</span>
-              <span className="sm:hidden">Timeline</span>
-            </Button>
-          )}
-        </div>
-        </>
+              {/* Timeline Overlay */}
+              {showTimeline && (
+                <div className="absolute bottom-0 left-0 right-0 z-10 bg-background/20 backdrop-blur-sm border-t border-border/30 p-3">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowTimeline(false)}
+                    className="absolute top-2 right-2 h-6 w-6 z-20"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                  <Timeline
+                    attacks={cyberAttacks}
+                    yearRange={yearRange}
+                    onYearRangeChange={setYearRange}
+                    onYearHover={setHoveredYear}
+                    onYearClick={setSelectedYear}
+                  />
+                </div>
+              )}
+
+              {/* Timeline Toggle Button - Only show when timeline is hidden */}
+              {!showTimeline && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowTimeline(true)}
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 md:bottom-3 z-20 gap-1.5 shadow-lg animate-pulse"
+                >
+                  <Calendar className="h-4 w-4" />
+                  <span className="hidden sm:inline">Afficher Timeline</span>
+                  <span className="sm:hidden">Timeline</span>
+                </Button>
+              )}
+            </div>
+          </>
         )}
       </div>
 

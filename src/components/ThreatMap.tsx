@@ -135,8 +135,21 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], selectedSec
 
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
+  // Determine if parent filters are active
+  const hasParentFilters = allAttacks.length > 0 && attacks.length !== allAttacks.length;
+  
+  // Reset severity filter when parent filters are cleared
+  useEffect(() => {
+    if (!hasParentFilters && severityFilter !== "all") {
+      setSeverityFilter("all");
+    }
+  }, [hasParentFilters]);
+  
+  // Only apply severity filter when no parent filters are active
+  const activeSeverityFilter = hasParentFilters ? undefined : (severityFilter === "all" ? undefined : severityFilter);
+
   const stats = {
-    total: severityFilter === "all" ? attacks.length : attacks.filter(a => a.severity === severityFilter).length,
+    total: attacks.length,
     critique: attacks.filter(a => a.severity === "critique").length,
     élevé: attacks.filter(a => a.severity === "élevé").length,
     moyen: attacks.filter(a => a.severity === "moyen").length,
@@ -144,13 +157,16 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], selectedSec
   };
 
   const filterBySeverity = useCallback((severity: SeverityLevel | "all") => {
-    setSeverityFilter(severity);
-  }, []);
+    // Only allow filtering when no parent filters are active
+    if (!hasParentFilters) {
+      setSeverityFilter(severity);
+    }
+  }, [hasParentFilters]);
 
   const addLayers = useCallback(() => {
     if (!map.current) return;
 
-    const { arcs, sources } = generateMapData(attacks, severityFilter === "all" ? undefined : severityFilter);
+    const { arcs, sources } = generateMapData(attacks, activeSeverityFilter);
 
     if (map.current.getSource("arcs")) {
       (map.current.getSource("arcs") as mapboxgl.GeoJSONSource).setData(arcs);
@@ -352,7 +368,7 @@ export const ThreatMap = ({ attacks, onAttackClick, allAttacks = [], selectedSec
     const updateMapData = () => {
       if (!map.current || !map.current.isStyleLoaded()) return;
 
-      const { arcs, sources } = generateMapData(attacks, severityFilter === "all" ? undefined : severityFilter);
+      const { arcs, sources } = generateMapData(attacks, activeSeverityFilter);
 
       const arcsSource = map.current.getSource("arcs") as mapboxgl.GeoJSONSource;
       const sourcesSource = map.current.getSource("sources") as mapboxgl.GeoJSONSource;
