@@ -66,6 +66,10 @@ const Live = () => {
     lat: 14.690,
     lng: -17.460,
     updated_at: "2026-01-20T10:30:00Z",
+    cve: null,
+    cve_source: null,
+    cve_notes: null,
+    cve_confidence: null,
   };
 
   const realEvents: AttackEvent[] = [
@@ -727,53 +731,56 @@ const Live = () => {
                 <Card className="bg-gradient-to-br from-red-100 via-white to-red-100 dark:from-red-950/80 dark:via-slate-900/90 dark:to-slate-950 border border-red-300 dark:border-red-500/30 overflow-hidden relative group shadow-lg">
                   <div className="absolute inset-0 bg-gradient-to-br from-red-500/[0.15] to-transparent dark:from-red-500/[0.08]" />
                   <div className="absolute -right-32 -top-32 w-64 h-64 bg-red-400/20 dark:bg-red-500/10 rounded-full blur-3xl" />
-                  <CardContent className="p-5 md:p-8 relative">
-                    <div className="flex items-start justify-between gap-3">
+                  <CardContent className="p-4 md:p-8 relative">
+                    {/* Header - responsive */}
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="p-3 rounded-2xl bg-red-200 dark:bg-red-500/20 border border-red-300 dark:border-red-500/30">
-                          <ShieldAlert className="h-6 w-6 text-red-700 dark:text-red-500" />
+                        <div className="p-2.5 md:p-3 rounded-2xl bg-red-200 dark:bg-red-500/20 border border-red-300 dark:border-red-500/30">
+                          <ShieldAlert className="h-5 w-5 md:h-6 md:w-6 text-red-700 dark:text-red-500" />
                         </div>
                         <div>
                           <h3 className="text-xs md:text-sm font-bold text-red-800 dark:text-red-400 uppercase tracking-wider">Cybermenaces détectées</h3>
                           <p className="text-[10px] text-slate-600 dark:text-muted-foreground font-medium">Estimation en temps réel</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-200 dark:bg-green-500/10 border border-green-300 dark:border-green-500/30">
-                          <TrendingUp className="h-3.5 w-3.5 text-green-700 dark:text-green-500" />
-                          <span className="text-xs font-bold text-green-800 dark:text-green-500">+18%</span>
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <div className="flex items-center gap-1 px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-green-200 dark:bg-green-500/10 border border-green-300 dark:border-green-500/30">
+                          <TrendingUp className="h-3 w-3 md:h-3.5 md:w-3.5 text-green-700 dark:text-green-500" />
+                          <span className="text-[10px] md:text-xs font-bold text-green-800 dark:text-green-500">+18%</span>
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-200 dark:bg-cyan-500/10 border border-cyan-300 dark:border-cyan-500/30">
-                          <Bug className="h-3 w-3 text-cyan-700 dark:text-cyan-400" />
-                          <span className="text-xs font-bold text-cyan-800 dark:text-cyan-400">Phishing - 40%</span>
+                        <div className="flex items-center gap-1 px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-cyan-200 dark:bg-cyan-500/10 border border-cyan-300 dark:border-cyan-500/30">
+                          <Bug className="h-3 w-3 md:h-3 md:w-3 text-cyan-700 dark:text-cyan-400" />
+                          <span className="text-[10px] md:text-xs font-bold text-cyan-800 dark:text-cyan-400">Phishing - 40%</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-6 md:mt-8">
-                      <div className="flex items-baseline gap-2">
-                        <div className="text-5xl md:text-7xl font-bold text-slate-900 dark:text-white tracking-tight" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+                    {/* Main number */}
+                    <div className="mt-4 md:mt-8">
+                      <div className="flex items-baseline gap-1.5 md:gap-2">
+                        <div className="text-4xl md:text-6xl lg:text-7xl font-bold text-slate-900 dark:text-white tracking-tight" style={{ fontFamily: "'Orbitron', sans-serif" }}>
                           {(detectedThreats / 1000000).toFixed(1)}M
                         </div>
-                        <span className="text-lg md:text-xl text-slate-600 dark:text-muted-foreground">/ 13.5M</span>
+                        <span className="text-base md:text-lg lg:text-xl text-slate-600 dark:text-muted-foreground">/ 13.5M</span>
                       </div>
-                      <div className="text-xs md:text-sm text-slate-600 dark:text-muted-foreground mt-2 font-medium">
+                      <div className="text-xs md:text-sm text-slate-600 dark:text-muted-foreground mt-1 md:mt-2 font-medium">
                         menaces identifiées
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3 md:gap-4 mt-6 md:mt-8">
-                      <div className="text-center p-3 rounded-xl bg-white dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700/50 shadow-md">
-                        <div className="text-xl md:text-2xl font-bold text-cyan-700 dark:text-cyan-500">28</div>
-                        <div className="text-[10px] text-slate-700 dark:text-muted-foreground mt-1 font-bold">Incidents</div>
+                    {/* Stats grid - responsive */}
+                    <div className="grid grid-cols-3 gap-2 md:gap-4 mt-4 md:mt-8">
+                      <div className="text-center p-2 md:p-3 rounded-xl bg-white dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700/50 shadow-md">
+                        <div className="text-lg md:text-xl lg:text-2xl font-bold text-cyan-700 dark:text-cyan-500">28</div>
+                        <div className="text-[9px] md:text-[10px] text-slate-700 dark:text-muted-foreground mt-0.5 md:mt-1 font-bold">Incidents</div>
                       </div>
-                      <div className="text-center p-3 rounded-xl bg-white dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700/50 shadow-md">
-                        <div className="text-xl md:text-2xl font-bold text-green-700 dark:text-green-500">2</div>
-                        <div className="text-[10px] text-slate-700 dark:text-muted-foreground mt-1 font-bold">Résolus</div>
+                      <div className="text-center p-2 md:p-3 rounded-xl bg-white dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700/50 shadow-md">
+                        <div className="text-lg md:text-xl lg:text-2xl font-bold text-green-700 dark:text-green-500">2</div>
+                        <div className="text-[9px] md:text-[10px] text-slate-700 dark:text-muted-foreground mt-0.5 md:mt-1 font-bold">Résolus</div>
                       </div>
-                      <div className="text-center p-3 rounded-xl bg-white dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700/50 shadow-md">
-                        <div className="text-xl md:text-2xl font-bold text-amber-700 dark:text-amber-500">26</div>
-                        <div className="text-[10px] text-slate-700 dark:text-muted-foreground mt-1 font-bold">Non confirmés</div>
+                      <div className="text-center p-2 md:p-3 rounded-xl bg-white dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700/50 shadow-md">
+                        <div className="text-lg md:text-xl lg:text-2xl font-bold text-amber-700 dark:text-amber-500">26</div>
+                        <div className="text-[9px] md:text-[10px] text-slate-700 dark:text-muted-foreground mt-0.5 md:mt-1 font-bold">Non.confirmés</div>
                       </div>
                     </div>
                   </CardContent>
@@ -783,34 +790,36 @@ const Live = () => {
                 <Card className="bg-gradient-to-br from-cyan-100 via-white to-cyan-100 dark:from-slate-900/90 dark:via-slate-800/80 dark:to-slate-900 border border-cyan-300 dark:border-cyan-500/30 overflow-hidden relative group shadow-lg">
                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.1] to-transparent" />
                   <div className="absolute -left-32 -bottom-32 w-64 h-64 bg-cyan-400/20 dark:bg-cyan-500/10 rounded-full blur-3xl" />
-                  <CardContent className="p-5 md:p-8 relative">
-                    <div className="flex items-center justify-between mb-6">
+                  <CardContent className="p-4 md:p-8 relative">
+                    {/* Header - responsive */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 md:mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="p-3 rounded-2xl bg-cyan-200 dark:bg-cyan-500/20 border border-cyan-300 dark:border-cyan-500/30">
-                          <History className="h-6 w-6 text-cyan-700 dark:text-cyan-400" />
+                        <div className="p-2.5 md:p-3 rounded-2xl bg-cyan-200 dark:bg-cyan-500/20 border border-cyan-300 dark:border-cyan-500/30">
+                          <History className="h-5 w-5 md:h-6 md:w-6 text-cyan-700 dark:text-cyan-400" />
                         </div>
                         <div>
                           <h3 className="text-xs md:text-sm font-bold text-cyan-800 dark:text-cyan-400 uppercase tracking-wider">Dernière Cyberattaque</h3>
-                          <p className="text-[10px] text-slate-600 dark:text-muted-foreground font-medium">Incident le plus récent enregistré</p>
+                          <p className="text-[10px] text-slate-600 dark:text-muted-foreground font-medium">Incident le plus récent</p>
                         </div>
                       </div>
                       <Link to={statsData.lastAttack ? `/live/${statsData.lastAttack.id}` : "/live"}>
-                        <Button className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-500 hover:to-cyan-600 text-white border-0 shadow-lg shadow-cyan-500/25 text-xs md:text-sm h-9 md:h-10 font-bold">
-                          <Zap className="h-3.5 w-3.5 md:h-4 md:w-4 mr-2" />
-                          Voir le replay
+                        <Button className="bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-500 hover:to-cyan-600 text-white border-0 shadow-lg shadow-cyan-500/25 text-xs md:text-sm h-8 md:h-10 font-bold">
+                          <Zap className="h-3 w-3 md:h-4 md:w-4 mr-1.5 md:mr-2" />
+                          <span className="hidden sm:inline">Voir le replay</span>
+                          <span className="sm:hidden">Replay</span>
                         </Button>
                       </Link>
                     </div>
 
                     {statsData.lastAttack ? (
-                      <div className="space-y-5">
+                      <div className="space-y-4 md:space-y-5">
                         <div className="flex flex-col">
                           <div className="text-[10px] text-slate-600 dark:text-muted-foreground uppercase tracking-wider mb-1 font-bold">Victime</div>
-                          <div className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">{statsData.lastAttack.victim}</div>
+                          <div className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white">{statsData.lastAttack.victim}</div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3 md:gap-4">
+                          <div className="space-y-2 md:space-y-3">
                             <div className="flex items-center gap-2">
                               <Clock className="h-3.5 w-3.5 text-slate-500" />
                               <span className="text-[10px] text-slate-600 uppercase tracking-wider font-bold">Date</span>
@@ -825,25 +834,25 @@ const Live = () => {
                             </div>
                           </div>
 
-                          <div className="space-y-3">
+                          <div className="space-y-2 md:space-y-3">
                             <div className="flex items-center gap-2">
                               <Bug className="h-3.5 w-3.5 text-slate-500" />
-                              <span className="text-[10px] text-slate-600 uppercase tracking-wider font-bold">Type d'attaque</span>
+                              <span className="text-[10px] text-slate-600 uppercase tracking-wider font-bold">Type</span>
                             </div>
                             <div className="text-sm font-bold text-slate-800 dark:text-white pl-5">{statsData.lastAttack.attack_type || 'N/A'}</div>
                           </div>
 
                           {statsData.lastAttack.hacker_group && (
-                            <div className="space-y-3">
+                            <div className="space-y-2 md:space-y-3">
                               <div className="flex items-center gap-2">
                                 <Users className="h-3.5 w-3.5 text-slate-500" />
-                                <span className="text-[10px] text-slate-600 uppercase tracking-wider font-bold">Groupe Hacker</span>
+                                <span className="text-[10px] text-slate-600 uppercase tracking-wider font-bold">Groupe</span>
                               </div>
                               <div className="text-sm font-bold text-red-700 dark:text-red-400 pl-5">{statsData.lastAttack.hacker_group}</div>
                             </div>
                           )}
 
-                          <div className="space-y-3">
+                          <div className="space-y-2 md:space-y-3">
                             <div className="flex items-center gap-2">
                               <AlertTriangle className="h-3.5 w-3.5 text-slate-500" />
                               <span className="text-[10px] text-slate-600 uppercase tracking-wider font-bold">Gravité</span>
@@ -857,7 +866,7 @@ const Live = () => {
                         </div>
 
                         {statsData.lastAttack.impact && (
-                          <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-700/50">
+                          <div className="space-y-2 md:space-y-3 pt-3 border-t border-slate-200 dark:border-slate-700/50">
                             <div className="flex items-center gap-2">
                               <Activity className="h-3.5 w-3.5 text-slate-400" />
                               <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Impact</span>
